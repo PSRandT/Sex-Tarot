@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e3e3e1">
+<title>Sex Tarot · 三牌阵</title>
+<style>
+  :root {
+    --paper:      #e4e4e2;
+    --paper-2:    #dcdcda;
+    --ink:        #24262e;
+    --ink-soft:   #4e5361;
+    --muted:      #7d7a74;
+    --gold:       #9c7c42;
+    --gold-soft:  #c9b287;
+    --blue:       #4a6382;
+    --line:       #cbc9c2;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) calc(72px + env(safe-area-inset-bottom));
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    background-color: var(--paper);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 手工纸底纹：固定铺满 + 一层柔光，保证文字始终压得住 */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url('bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(255,255,255,.55) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(246,246,244,.30) 0%, rgba(240,240,238,.42) 100%);
+    pointer-events: none;
+  }
+
+  /* 背景星图 —— 用 CSS 画，不占请求 */
+  .sky {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: .5;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 18%, rgba(176,141,79,.55) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 28% 42%, rgba(176,141,79,.35) 50%, transparent 51%),
+      radial-gradient(1.6px 1.6px at 74% 12%, rgba(176,141,79,.45) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 88% 34%, rgba(176,141,79,.3)  50%, transparent 51%),
+      radial-gradient(1.3px 1.3px at 46% 8%,  rgba(176,141,79,.4)  50%, transparent 51%),
+      radial-gradient(1.1px 1.1px at 62% 58%, rgba(176,141,79,.3)  50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 8%  64%, rgba(176,141,79,.35) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 92% 78%, rgba(176,141,79,.3)  50%, transparent 51%),
+      radial-gradient(1.3px 1.3px at 34% 88%, rgba(176,141,79,.28) 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 68% 92%, rgba(176,141,79,.25) 50%, transparent 51%);
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+  }
+
+  /* ── 首屏：标题整组摆在屏幕正中 ── */
+  body.is-intro .wrap {
+    justify-content: center;
+    padding-bottom: clamp(16px, 6vh, 64px);
+  }
+  body.is-intro .grid { display: none; }
+  body.is-intro header { margin-bottom: clamp(34px, 7vw, 56px); }
+  body.is-intro .sigil { width: 64px; height: 64px; margin-bottom: 24px; }
+  body.is-intro h1 { font-size: clamp(26px, 6.4vw, 40px); letter-spacing: .34em; text-indent: .34em; }
+  body.is-intro .sub { font-size: clamp(11px, 2.9vw, 13px); }
+  body.is-intro .bar { margin: 0; }
+
+  /* ── 头部 ── */
+  header { text-align: center; margin-bottom: clamp(20px, 4vw, 34px); flex: 0 0 auto; }
+
+  .sigil {
+    width: 54px; height: 54px; margin: 0 auto 18px;
+    display: block; opacity: .75;
+  }
+  .sigil .ring { fill: none; stroke: var(--gold); stroke-width: 1; opacity: .5; }
+  .sigil .star { fill: var(--gold); opacity: .8; }
+  .sigil .dot  { fill: var(--gold); opacity: .45; }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(20px, 5vw, 27px);
+    font-weight: 500;
+    letter-spacing: .3em;
+    text-indent: .3em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+
+  .divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin: 0 auto 12px; max-width: 240px;
+    color: var(--gold);
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+  }
+  .divider span { font-size: 10px; opacity: .8; line-height: 1; }
+
+  .sub {
+    font-size: clamp(11px, 2.8vw, 12.5px);
+    color: var(--muted);
+    letter-spacing: .26em;
+    text-indent: .26em;
+  }
+
+  /* ── 按钮 ── */
+  .bar {
+    display: flex; justify-content: center;
+    margin: clamp(24px, 4vw, 36px) 0 clamp(28px, 4.5vw, 44px);
+    flex: 0 0 auto;
+  }
+
+  #draw {
+    appearance: none;
+    border: 1px solid var(--gold);
+    background: linear-gradient(180deg, rgba(255,253,248,.96) 0%, rgba(243,236,220,.96) 100%);
+    color: #7a5f33;
+    border-radius: 999px;
+    padding: 14px 42px;
+    font-size: 14px;
+    font-family: inherit;
+    letter-spacing: .34em;
+    text-indent: .34em;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(156,124,66,.14), 0 6px 18px rgba(156,124,66,.12);
+    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+    min-height: 48px;
+    backdrop-filter: blur(2px);
+  }
+  #draw:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(176,141,79,.16), 0 10px 26px rgba(176,141,79,.16);
+  }
+  #draw:active:not(:disabled) { transform: translateY(0) scale(.985); }
+  #draw:disabled { opacity: .45; cursor: default; }
+  #draw:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  /* ── 牌阵 ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(14px, 2.4vw, 24px);
+    align-items: start;
+    flex: 1 1 auto;
+  }
+
+  /* 没有外框：牌本身是主体，文字顺着牌的宽度上下延展 */
+  .slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .slot-head {
+    padding: 0 0 12px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .36em;
+    text-indent: .36em;
+    color: var(--muted);
+  }
+  .slot-head .dot {
+    display: inline-block;
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--gold);
+    vertical-align: middle;
+    margin: 0 8px 3px;
+    opacity: .7;
+  }
+
+  /* 牌面：逆位直接倒过来 */
+  .frame {
+    position: relative;
+    display: block;
+    line-height: 0;
+  }
+  .frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 3px 14px rgba(60,50,30,.16);
+    transition: transform .4s cubic-bezier(.2,.7,.3,1);
+    border-radius: 2px;
+  }
+  .frame img.rev { transform: rotate(180deg); }
+
+  .body { padding: 18px 0 0; flex: 1 1 auto; min-width: 0; }
+
+  .name {
+    font-size: clamp(15px, 3.6vw, 17px);
+    font-weight: 600;
+    letter-spacing: .14em;
+    margin: 0 0 3px;
+  }
+  .meta {
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: .14em;
+    margin-bottom: 14px;
+  }
+
+  .kv + .kv { margin-top: 14px; padding-top: 13px; border-top: 1px dashed var(--line); }
+
+  .k {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: .24em;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .k::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--gold-soft), transparent);
+    opacity: .5;
+  }
+
+  .v {
+    font-size: 13.5px;
+    line-height: 1.85;
+    color: var(--ink-soft);
+    word-break: break-word;
+  }
+  .v.strong { color: var(--ink); }
+
+  /* ── 空状态：撑满整屏剩余空间，月亮和文字都在正中心 ── */
+  .grid:has(.empty) {
+    align-items: stretch;
+    grid-template-rows: 1fr;
+    align-content: stretch;
+  }
+
+  .empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: clamp(320px, 62vh, 720px);
+    padding: 20px;
+    color: var(--muted);
+  }
+  .empty .moon {
+    width: 42px; height: 42px;
+    margin: 0 0 20px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-soft);
+    position: relative;
+    flex: 0 0 auto;
+    opacity: .7;
+  }
+  .empty .moon::after {
+    content: '';
+    position: absolute; inset: -13px;
+    border-radius: 50%;
+    border: 1px dashed var(--gold-soft);
+    opacity: .5;
+  }
+  .empty p { margin: 0; font-size: 13px; letter-spacing: .2em; text-indent: .2em; }
+
+  .reveal { animation: fade .55s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── 平板 ── */
+  @media (max-width: 900px) {
+    .grid { gap: 14px; }
+    .frame img { max-width: 100%; }
+  }
+
+  /* ── 手机 ── */
+  @media (max-width: 640px) {
+    body { font-size: 14px; padding-left: 14px; padding-right: 14px; }
+
+    .grid { grid-template-columns: 1fr; gap: clamp(30px, 8vw, 44px); }
+
+    .slot { flex-direction: column; }
+
+    .frame img { width: 100%; }
+
+    .body { padding: 14px 0 0; }
+
+    .slot-head { padding: 0 0 10px; font-size: 10px; }
+    .slot-head .dot { display: inline-block; }
+
+    .name { font-size: 16px; margin-bottom: 2px; }
+    .meta { margin-bottom: 11px; }
+
+    .kv + .kv { margin-top: 11px; padding-top: 10px; }
+    .v { font-size: 13px; line-height: 1.8; }
+
+    #draw { padding: 14px 34px; letter-spacing: .28em; text-indent: .28em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body class="is-intro">
+<div class="sky" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <svg class="sigil" viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="ring" cx="50" cy="50" r="46"/>
+      <circle class="ring" cx="50" cy="50" r="36" stroke-dasharray="2 5"/>
+      <path class="star" d="M50 17 L57.2 42.8 L83 50 L57.2 57.2 L50 83 L42.8 57.2 L17 50 L42.8 42.8 Z" opacity=".55"/>
+      <circle class="dot" cx="50" cy="10" r="1.6"/>
+      <circle class="dot" cx="50" cy="90" r="1.6"/>
+      <circle class="dot" cx="10" cy="50" r="1.6"/>
+      <circle class="dot" cx="90" cy="50" r="1.6"/>
+    </svg>
+
+    <h1>Sex Tarot</h1>
+    <div class="divider"><span>✦</span></div>
+    <div class="sub">大阿卡纳 · 过去 / 现在 / 未来</div>
+  </header>
+
+  <div class="bar">
+    <button id="draw" type="button">抽 三 张</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script type="module">
+import { drawFrom } from './deck-core.js';
+
+const grid = document.getElementById('grid');
+const btn = document.getElementById('draw');
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+async function doDraw() {
+  btn.disabled = true;
+  btn.textContent = '抽 牌 中';
+  try {
+    const r = await fetch('cards.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error('牌组加载失败');
+    const deck = await r.json();
+    document.body.classList.remove('is-intro');
+    render(drawFrom(deck));
+  } catch (e) {
+    document.body.classList.remove('is-intro');
+    grid.innerHTML = `<div class="empty"><p>${esc(e.message)}</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '再 抽 一 次';
+  }
+}
+
+function render(cards) {
+  grid.innerHTML = cards.map((c, i) => {
+    const rev = c.orientation === 'reversed';
+    return `
+      <article class="slot reveal" style="animation-delay:${i * 110}ms">
+        <div class="slot-head">${esc(c.positionLabel)}<span class="dot"></span>${esc(c.stateLabel)}</div>
+        <div class="frame">
+          <img class="${rev ? 'rev' : ''}" src="${esc(c.image)}" alt="${esc(c.name)}" loading="lazy" decoding="async">
+        </div>
+        <div class="body">
+          <h2 class="name">${esc(c.name)}</h2>
+          <div class="meta">${esc(c.orientationLabel)} · ${esc(c.number)} / 21 · ${esc(c.stateLabel)}</div>
+          <div class="kv">
+            <div class="k">牌面</div>
+            <div class="v strong">${esc(c.desc)}</div>
+          </div>
+          <div class="kv">
+            <div class="k">解读</div>
+            <div class="v">${esc(c.interpret)}</div>
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+btn.addEventListener('click', doDraw);
+</script>
+</body>
+</html>

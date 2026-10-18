@@ -1,0 +1,23 @@
+{
+  "name": "sex-tarot",
+  "version": "1.0.0",
+  "description": "Sex Tarot · 22 张大阿卡纳三牌阵（过去 / 现在 / 未来）",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "sex-tarot-mcp": "src/mcp.mjs"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "mcp": "node src/mcp.mjs",
+    "build": "node tools/build-static.mjs",
+    "preview": "node tools/serve-static.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

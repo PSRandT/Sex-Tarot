@@ -1,0 +1,12 @@
+node_modules/
+build/
+*.log
+.env
+.DS_Store
+Thumbs.db
+
+# 1024×1536 原始大图不入库（49 MB）；网页用的 webp 在 public/cards/
+public/cards/*.png
+
+# 重画牌面时的风格锚，属中间产物
+assets/
