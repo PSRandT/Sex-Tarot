@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sex-tarot-annotations
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: PUBLIC_BASE_URL="$RENDER_EXTERNAL_URL" node src/mcp.mjs --http
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_VERSION
+        value: 22.22.0
