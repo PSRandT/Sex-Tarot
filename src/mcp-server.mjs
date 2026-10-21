@@ -19,6 +19,7 @@ export function buildServer() {
       format: z.enum(['text', 'json']).optional()
         .describe('输出格式：text 为给人看的纯文本（默认），json 为结构化数据'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     async ({ format }) => {
       const result = draw();
       if (format === 'json') {
@@ -43,6 +44,7 @@ export function buildServer() {
       format: z.enum(['text', 'json']).optional()
         .describe('输出格式：text（默认）或 json'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     async ({ position, format }) => {
       const idx = POSITIONS.findIndex(p => p.key === position);
       if (idx < 0) throw new Error(`未知牌位：${position}`);
@@ -60,6 +62,7 @@ export function buildServer() {
     'list_cards',
     '列出全部 22 张大阿卡纳（编号 / 中文名 / 英文 id），不带文案。',
     {},
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     async () => {
       const deck = loadDeck();
       const lines = deck
@@ -78,6 +81,7 @@ export function buildServer() {
     {
       card: z.string().describe('牌编号（0-21）或英文 id（如 the-fool）'),
     },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     async ({ card }) => {
       const deck = loadDeck();
       const key = String(card).trim().toLowerCase();
